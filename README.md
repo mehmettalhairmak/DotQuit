@@ -6,10 +6,13 @@
 
 The zero-bloat menu bar companion that quits macOS apps when their last window closes — so your Dock stays clean and your RAM stays yours.
 
-[![macOS](https://img.shields.io/badge/macOS-14.0%2B-000000?logo=apple&logoColor=white)](https://www.apple.com/macos/)
+[![Download DMG](https://img.shields.io/badge/Download-DotQuit.dmg-30B14F?style=for-the-badge&logo=apple&logoColor=white)](https://github.com/mehmettalhairmak/dotquit/releases/latest/download/DotQuit.dmg)
+[![Buy License on Polar](https://img.shields.io/badge/License-Buy%20on%20Polar-blue?style=for-the-badge&logo=polar)](https://buy.polar.sh/polar_cl_tfdIyrLDQxAYfrf82gdBeNrCVPXjyA5CqFSO90Eitzf)
+
+[![Platform](https://img.shields.io/badge/platform-macOS%2014.0%2B-000000?logo=apple&logoColor=white)](https://www.apple.com/macos/)
 [![Swift](https://img.shields.io/badge/Swift-5.10%2B-F05138?logo=swift&logoColor=white)](https://swift.org)
-[![Status](https://img.shields.io/badge/status-release%20ready-30B14F)](https://github.com/mehmettalhairmak/DotQuit/releases)
 [![License](https://img.shields.io/badge/license-GPLv3-0A84FF)](LICENSE)
+[![Release](https://img.shields.io/badge/release-v1.0.0-6E56CF)](https://github.com/mehmettalhairmak/dotquit/releases/latest)
 
 </div>
 
@@ -88,9 +91,29 @@ A 7-day trial, then a one-time **$2.99** lifetime license covering **2 Macs**. A
 
 ## Installation
 
-1. Download the latest `DotQuit.zip` from [**Releases**](https://github.com/mehmettalhairmak/DotQuit/releases).
-2. Unzip and drag **DotQuit.app** to `/Applications`.
-3. Launch it. DotQuit lives in the menu bar — there's no Dock icon by default.
+There are three ways to get DotQuit. They are independent — pick whichever suits you.
+
+### 1. Download the notarized DMG — the easy path
+
+[**⬇ Download DotQuit.dmg**](https://github.com/mehmettalhairmak/dotquit/releases/latest/download/DotQuit.dmg)
+
+1. Open the DMG and drag **DotQuit.app** into **Applications**.
+2. Launch it. DotQuit lives in the menu bar — there's no Dock icon by default.
+3. Grant Accessibility access (see below).
+
+The build is signed with a Developer ID and notarized by Apple, so it opens without Gatekeeper warnings — no right-click-Open dance, no `xattr` incantations.
+
+### 2. Buy a license — support the project
+
+[**Get a lifetime license on Polar — $2.99**](https://buy.polar.sh/polar_cl_tfdIyrLDQxAYfrf82gdBeNrCVPXjyA5CqFSO90Eitzf)
+
+One payment, two Macs, every future update. Activate under **Settings → License**, or paste the key from your Polar receipt.
+
+The source is GPLv3 and the app runs without a license during the 7-day trial — buying one funds the notarized builds and continued development rather than unlocking the code. See [License](#license).
+
+### 3. Build from source — free, always
+
+Everything you need is in this repository. Jump to [Building from source](#building-from-source).
 
 ### Granting Accessibility access
 
