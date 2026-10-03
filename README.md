@@ -9,7 +9,7 @@ The zero-bloat menu bar companion that quits macOS apps when their last window c
 [![macOS](https://img.shields.io/badge/macOS-14.0%2B-000000?logo=apple&logoColor=white)](https://www.apple.com/macos/)
 [![Swift](https://img.shields.io/badge/Swift-5.10%2B-F05138?logo=swift&logoColor=white)](https://swift.org)
 [![Status](https://img.shields.io/badge/status-release%20ready-30B14F)](https://github.com/mehmettalhairmak/DotQuit/releases)
-[![License](https://img.shields.io/badge/license-proprietary-555555)](#license)
+[![License](https://img.shields.io/badge/license-GPLv3-0A84FF)](LICENSE)
 
 </div>
 
@@ -98,7 +98,7 @@ DotQuit cannot see window events without it. On first launch macOS will prompt; 
 
 **System Settings → Privacy & Security → Accessibility → enable DotQuit**
 
-The Shortcuts & Permissions pane shows live status and has a button that takes you straight there. Until access is granted, DotQuit shows a dotted menu bar icon and does nothing.
+The Shortcuts & Permissions pane shows live status and has a button that takes you straight there. Until access is granted, the menu bar icon stays dimmed and DotQuit does nothing.
 
 > Accessibility is a TCC permission, not an entitlement. DotQuit uses it to observe *when* windows open and close — never what is inside them.
 
@@ -174,9 +174,20 @@ What is never sent: window titles, file paths, keystrokes, your license key, or 
 
 ## License
 
-Source-available, **not** open source. DotQuit is a commercial application; all rights reserved by the author. You're welcome to read the code, learn from it, and build it for your own use — redistribution and resale are not permitted.
+DotQuit's source code is free software under the **GNU General Public License v3.0**. The full text is in [`LICENSE`](LICENSE).
 
-> No `LICENSE` file is committed yet. Add one to make these terms binding.
+That means you may use, study, modify and redistribute the source, and distribute builds you make from it — provided derivative works stay under GPLv3 and ship their corresponding source.
+
+**What the paid license buys.** The code is free; the convenience isn't. A [Polar.sh](https://polar.sh) purchase gets you:
+
+- a **pre-built, Developer ID-signed and notarized** binary that launches without Gatekeeper warnings
+- **packaged releases** with release notes, so you don't have to rebuild to stay current
+- **support**, and a direct say in what gets built next
+- the project's continued development
+
+It is a voluntary exchange, not a restriction. Nothing in the paid license overrides the GPL: if you'd rather clone the repo and build DotQuit yourself, that is explicitly allowed and always will be.
+
+**Third-party code.** [TelemetryDeck SwiftClient](https://github.com/TelemetryDeck/SwiftClient) is MIT-licensed, which is compatible with GPLv3.
 
 ## Author
 
