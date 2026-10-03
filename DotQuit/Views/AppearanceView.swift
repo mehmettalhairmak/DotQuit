@@ -11,8 +11,7 @@ struct AppearanceView: View {
                 description: "Adjust how DotQuit looks in the menu bar and on your desktop."
             )
 
-            SettingsGroup(footer: "The menu bar icon switches to a dotted outline whenever "
-                          + "DotQuit is off or paused.") {
+            SettingsGroup(footer: "The menu bar icon dims whenever DotQuit is off or paused.") {
                 SettingsRow("Appearance") {
                     Picker("", selection: $settings.theme) {
                         ForEach(AppTheme.allCases) { theme in
@@ -27,7 +26,11 @@ struct AppearanceView: View {
                 SettingsRow("Menu bar icon") {
                     Picker("", selection: $settings.menuBarIconStyle) {
                         ForEach(MenuBarIconStyle.allCases) { style in
-                            Label(style.title, systemImage: style.symbolName).tag(style)
+                            if let asset = style.assetName {
+                                Label { Text(style.title) } icon: { Image(asset) }.tag(style)
+                            } else {
+                                Label(style.title, systemImage: style.symbolName).tag(style)
+                            }
                         }
                     }
                     .labelsHidden()
@@ -52,10 +55,15 @@ struct AppearanceView: View {
 
                 SettingsRow("Preview") {
                     HStack(spacing: 10) {
-                        Image(systemName: settings.isActive
-                              ? settings.menuBarIconStyle.symbolName
-                              : "circle.dotted")
+                        Group {
+                            if let asset = settings.menuBarIconStyle.assetName {
+                                Image(asset)
+                            } else {
+                                Image(systemName: settings.menuBarIconStyle.symbolName)
+                            }
+                        }
                         .font(.system(size: 14))
+                        .opacity(settings.isActive ? 1 : 0.4)
                         Text(settings.isActive ? "Active" : settings.statusText)
                             .font(.system(size: 12))
                             .foregroundStyle(.secondary)

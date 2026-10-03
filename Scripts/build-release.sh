@@ -16,8 +16,19 @@ set -euo pipefail
 # Configuration — override by exporting these, or edit the defaults.
 # ---------------------------------------------------------------------------
 
-# `security find-identity -v -p codesigning` lists valid identities.
-DEVELOPER_ID_APP="${DEVELOPER_ID_APP:-Developer ID Application: YOUR NAME (YOURTEAMID)}"
+# Auto-detected from the login Keychain unless you override it.
+# `security find-identity -v -p codesigning` lists what is installed.
+# Returns empty (and succeeds) when no such certificate is installed — under
+# `set -euo pipefail` a bare grep miss would abort the script before it could
+# explain itself.
+detect_developer_id() {
+  local line
+  line=$(security find-identity -v -p codesigning 2>/dev/null \
+         | grep "Developer ID Application" || true)
+  [ -n "$line" ] || return 0
+  printf '%s\n' "$line" | sed -n -E '1s/.*"(.*)".*/\1/p'
+}
+DEVELOPER_ID_APP="${DEVELOPER_ID_APP:-$(detect_developer_id || true)}"
 
 # Created once with:
 #   xcrun notarytool store-credentials dotquit-notary \
@@ -34,6 +45,8 @@ DIST_DIR="$REPO_ROOT/dist"
 BUILD_DIR="$REPO_ROOT/.build-release"
 APP_NAME="DotQuit.app"
 APP_PATH="$DIST_DIR/$APP_NAME"
+DMG_PATH="$DIST_DIR/DotQuit.dmg"
+VOLUME_NAME="DotQuit"
 ENTITLEMENTS="$REPO_ROOT/DotQuit/DotQuit.entitlements"
 
 DO_SIGN=false
@@ -57,11 +70,34 @@ step "Preflight"
 # ---------------------------------------------------------------------------
 command -v xcodebuild >/dev/null || fail "xcodebuild not found (install Xcode)."
 [ -f "$ENTITLEMENTS" ] || fail "missing entitlements at $ENTITLEMENTS"
-xcodebuild -version | head -1
+xcodebuild -version | sed -n '1p'
 echo "configuration : $CONFIGURATION"
 echo "architectures : $ARCHS_LIST"
 echo "sign          : $DO_SIGN"
 echo "notarize      : $DO_NOTARIZE"
+if [ -n "$DEVELOPER_ID_APP" ]; then
+  echo "identity      : $DEVELOPER_ID_APP"
+else
+  echo "identity      : (none found — no 'Developer ID Application' certificate)"
+fi
+
+if [ "$DO_SIGN" = true ] && [ -z "$DEVELOPER_ID_APP" ]; then
+  cat >&2 <<'MSG'
+
+error: no "Developer ID Application" certificate in the Keychain.
+
+  An "Apple Development" certificate is NOT sufficient — it signs for local
+  debugging only, and Apple will refuse to notarize anything signed with it.
+
+  To get one:
+    1. developer.apple.com -> Certificates -> + -> Developer ID Application
+    2. download the .cer and double-click to install it
+    3. verify with: security find-identity -v -p codesigning
+
+  Or run without --sign to produce an unsigned build and DMG.
+MSG
+  exit 1
+fi
 
 # ---------------------------------------------------------------------------
 step "Clean"
@@ -130,9 +166,6 @@ while IFS= read -r line; do NESTED+=("$line"); done < <(
 )
 
 if [ "$DO_SIGN" = true ]; then
-  security find-identity -v -p codesigning | grep -q "$DEVELOPER_ID_APP" \
-    || fail "identity not found in keychain: $DEVELOPER_ID_APP"
-
   for nested in ${NESTED+"${NESTED[@]}"}; do
     echo "signing nested: ${nested#"$APP_PATH"/}"
     sign_one "$nested"
@@ -164,25 +197,27 @@ EOF
 fi
 
 # ---------------------------------------------------------------------------
-step "Package"
+step "Package (zip)"
 # ---------------------------------------------------------------------------
+# notarytool only accepts .zip, .dmg or .pkg. The app is notarised from the
+# zip first so the ticket can be stapled to the .app *before* it goes into the
+# DMG — otherwise a user who drags the app out of the DMG gets an app with no
+# ticket of its own, and Gatekeeper has to phone home to validate it.
 ZIP_PATH="$DIST_DIR/DotQuit.zip"
 # ditto --keepParent preserves the bundle structure and symlinks; `zip` does not.
 ditto -c -k --keepParent "$APP_PATH" "$ZIP_PATH"
 echo "wrote $(du -h "$ZIP_PATH" | cut -f1) -> ${ZIP_PATH#"$REPO_ROOT"/}"
 
 # ---------------------------------------------------------------------------
-step "Notarization"
+step "Notarize app"
 # ---------------------------------------------------------------------------
 if [ "$DO_NOTARIZE" = true ]; then
   xcrun notarytool submit "$ZIP_PATH" --keychain-profile "$NOTARY_PROFILE" --wait
-  # The ticket is stapled to the .app, then the zip is rebuilt so the
-  # distributed archive contains the stapled copy.
   xcrun stapler staple "$APP_PATH"
   xcrun stapler validate "$APP_PATH"
+  # Re-zip so the archive carries the stapled copy too.
   rm -f "$ZIP_PATH"
   ditto -c -k --keepParent "$APP_PATH" "$ZIP_PATH"
-  spctl --assess --type exec --verbose=4 "$APP_PATH"
 else
   cat <<EOF
 skipped (no --notarize). The commands that would run:
@@ -190,9 +225,56 @@ skipped (no --notarize). The commands that would run:
   xcrun notarytool submit "dist/DotQuit.zip" --keychain-profile "\$NOTARY_PROFILE" --wait
   xcrun stapler staple "dist/$APP_NAME"
   xcrun stapler validate "dist/$APP_NAME"
-  # then re-zip so the archive carries the stapled ticket
+EOF
+fi
 
-  # if it is rejected:
+# ---------------------------------------------------------------------------
+step "Package (dmg)"
+# ---------------------------------------------------------------------------
+DMG_STAGING="$BUILD_DIR/dmg-staging"
+rm -rf "$DMG_STAGING"; mkdir -p "$DMG_STAGING"
+ditto "$APP_PATH" "$DMG_STAGING/$APP_NAME"
+# The /Applications alias is what makes the window a drag-to-install target.
+ln -s /Applications "$DMG_STAGING/Applications"
+
+rm -f "$DMG_PATH"
+hdiutil create \
+  -volname "$VOLUME_NAME" \
+  -srcfolder "$DMG_STAGING" \
+  -fs HFS+ \
+  -format UDZO \
+  -quiet \
+  "$DMG_PATH"
+rm -rf "$DMG_STAGING"
+echo "wrote $(du -h "$DMG_PATH" | cut -f1) -> ${DMG_PATH#"$REPO_ROOT"/}"
+
+if [ "$DO_SIGN" = true ]; then
+  # A signed DMG means the container itself is tamper-evident, not just the
+  # app inside it.
+  codesign --force --timestamp --sign "$DEVELOPER_ID_APP" "$DMG_PATH"
+  codesign --verify --verbose=2 "$DMG_PATH"
+fi
+
+# ---------------------------------------------------------------------------
+step "Notarize dmg"
+# ---------------------------------------------------------------------------
+if [ "$DO_NOTARIZE" = true ]; then
+  xcrun notarytool submit "$DMG_PATH" --keychain-profile "$NOTARY_PROFILE" --wait
+  xcrun stapler staple "$DMG_PATH"
+  xcrun stapler validate "$DMG_PATH"
+
+  step "Gatekeeper assessment"
+  spctl --assess --type exec --verbose=4 "$APP_PATH"
+  spctl --assess --type open --context context:primary-signature --verbose=4 "$DMG_PATH"
+else
+  cat <<EOF
+skipped (no --notarize). The commands that would run:
+
+  xcrun notarytool submit "dist/DotQuit.dmg" --keychain-profile "\$NOTARY_PROFILE" --wait
+  xcrun stapler staple "dist/DotQuit.dmg"
+  xcrun stapler validate "dist/DotQuit.dmg"
+
+  # if a submission is rejected:
   xcrun notarytool log <submission-id> --keychain-profile "\$NOTARY_PROFILE"
 EOF
 fi
@@ -200,3 +282,4 @@ fi
 step "Done"
 echo "app : ${APP_PATH#"$REPO_ROOT"/}"
 echo "zip : ${ZIP_PATH#"$REPO_ROOT"/}"
+echo "dmg : ${DMG_PATH#"$REPO_ROOT"/}"

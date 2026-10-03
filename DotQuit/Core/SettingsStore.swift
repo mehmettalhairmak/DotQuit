@@ -58,12 +58,22 @@ enum AppTheme: String, CaseIterable, Identifiable, Sendable {
 }
 
 enum MenuBarIconStyle: String, CaseIterable, Identifiable, Sendable {
+    /// The DotQuit mark: a window card with traffic lights over a Dock dot.
+    /// Ships as a template image in the asset catalog, so macOS tints it for
+    /// light, dark and wallpaper-tinted menu bars.
+    case dotQuit
     case dot, ring, target, power
 
     var id: String { rawValue }
 
+    /// Asset-catalog name, for styles drawn from artwork rather than SF Symbols.
+    var assetName: String? {
+        self == .dotQuit ? "MenuBarIcon" : nil
+    }
+
     var symbolName: String {
         switch self {
+        case .dotQuit: "macwindow"   // fallback only; `assetName` wins
         case .dot: "circlebadge.fill"
         case .ring: "largecircle.fill.circle"
         case .target: "smallcircle.filled.circle"
@@ -73,6 +83,7 @@ enum MenuBarIconStyle: String, CaseIterable, Identifiable, Sendable {
 
     var title: String {
         switch self {
+        case .dotQuit: "DotQuit"
         case .dot: "Dot"
         case .ring: "Ring"
         case .target: "Target"
@@ -202,7 +213,7 @@ final class SettingsStore {
         optionInverts = defaults.object(forKey: DefaultsKey.optionInverts) as? Bool ?? true
         theme = (defaults.string(forKey: DefaultsKey.theme).flatMap(AppTheme.init(rawValue:))) ?? .auto
         menuBarIconStyle = (defaults.string(forKey: DefaultsKey.menuBarIconStyle)
-            .flatMap(MenuBarIconStyle.init(rawValue:))) ?? .dot
+            .flatMap(MenuBarIconStyle.init(rawValue:))) ?? .dotQuit
         soundFeedback = defaults.object(forKey: DefaultsKey.soundFeedback) as? Bool ?? false
         hapticFeedback = defaults.object(forKey: DefaultsKey.hapticFeedback) as? Bool ?? true
         showInDock = defaults.object(forKey: DefaultsKey.showInDock) as? Bool ?? false

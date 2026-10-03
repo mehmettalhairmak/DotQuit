@@ -14,12 +14,23 @@ struct DotQuitApp: App {
     }
 }
 
-/// The status item glyph. Switches to a dotted outline whenever DotQuit isn't
-/// actively watching, so the menu bar always reflects the real state.
+/// The status item glyph.
+///
+/// Dims whenever DotQuit isn't actively watching, so the menu bar always
+/// reflects the real state. `MenuBarExtra`'s `image:` initializer would be
+/// shorter, but it is static — it can express neither that state nor the
+/// icon-style picker in Appearance.
 private struct MenuBarLabel: View {
     var body: some View {
         let settings = SettingsStore.shared
-        Image(systemName: settings.isActive ? settings.menuBarIconStyle.symbolName : "circle.dotted")
+        Group {
+            if let asset = settings.menuBarIconStyle.assetName {
+                Image(asset)
+            } else {
+                Image(systemName: settings.menuBarIconStyle.symbolName)
+            }
+        }
+        .opacity(settings.isActive ? 1 : 0.4)
     }
 }
 
