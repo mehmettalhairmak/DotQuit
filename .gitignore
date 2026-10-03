@@ -1,0 +1,18 @@
+# Build output
+dist/
+.build-release/
+build/
+DerivedData/
+*.xcarchive
+
+# Xcode per-user state (project settings stay tracked)
+xcuserdata/
+*.xcuserstate
+
+# SwiftPM working directories. Package.resolved is deliberately NOT ignored —
+# it pins exact dependency revisions for reproducible checkouts.
+.swiftpm/
+.build/
+
+# macOS
+.DS_Store

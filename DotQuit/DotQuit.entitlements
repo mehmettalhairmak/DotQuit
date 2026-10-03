@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!--
+	  DotQuit is a Developer ID (non-App-Store) app and must NOT be sandboxed.
+
+	  The accessibility APIs it is built on — AXObserver on other processes,
+	  AXUIElementCopyAttributeValue across applications, and
+	  NSRunningApplication.terminate() — are all blocked inside a sandbox
+	  container. Access is instead gated by the user's Accessibility grant in
+	  System Settings, which is a TCC permission, not an entitlement.
+
+	  Nothing else is declared on purpose. Every hardened-runtime exception
+	  (allow-jit, allow-unsigned-executable-memory, disable-library-validation,
+	  and so on) weakens the runtime and has to be justified at notarization.
+	  DotQuit does not JIT, load third-party plug-ins, or inject into other
+	  processes, so it needs none of them.
+	-->
+	<key>com.apple.security.app-sandbox</key>
+	<false/>
+</dict>
+</plist>

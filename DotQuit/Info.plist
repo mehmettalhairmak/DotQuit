@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!--
+	  Partial Info.plist. GENERATE_INFOPLIST_FILE is still YES, so Xcode
+	  merges its generated keys (CFBundle*, LSUIElement, LSApplicationCategoryType,
+	  NSHumanReadableCopyright) into this file at build time. Only keys Xcode
+	  has no INFOPLIST_KEY_ build setting for belong here.
+	-->
+	<key>NSAccessibilityUsageDescription</key>
+	<string>DotQuit watches for the moment you close an app's last window, so it can quit the app cleanly instead of leaving it running in the background. It only observes window open and close events — never window contents, text, or keystrokes.</string>
+</dict>
+</plist>
