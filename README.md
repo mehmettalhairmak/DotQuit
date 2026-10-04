@@ -6,6 +6,8 @@
 
 **Zero-bloat macOS menu bar utility that automatically quits apps when their last window is closed.**
 
+Native Swift + AppKit, **~19 MB** resident, zero idle CPU — it keeps your RAM clean without becoming the thing that eats it.
+
 <br>
 
 [![Download DMG](https://img.shields.io/badge/Download-DotQuit.dmg-30B14F?style=for-the-badge&logo=apple&logoColor=white)](https://github.com/mehmettalhairmak/dotquit/releases/latest/download/DotQuit.dmg)
@@ -15,6 +17,20 @@
 [![Universal](https://img.shields.io/badge/binary-Universal%20%28arm64%20%2B%20x86__64%29-8A63D2)](#features)
 [![Notarized](https://img.shields.io/badge/Apple-Notarized-30B14F?logo=apple&logoColor=white)](#1-direct-download-dmg--recommended)
 [![License](https://img.shields.io/badge/license-GPLv3-0A84FF)](LICENSE)
+
+</div>
+
+<p align="center">
+  <img src="assets/demo.gif" alt="DotQuit Demo" width="750">
+</p>
+
+<div align="center">
+
+### 🚀 Product Hunt Launch Special
+
+Use code **`PRODUCTHUNT`** at checkout for **100% off DotQuit Pro** — free for the first 100 people.
+
+[![Claim with PRODUCTHUNT](https://img.shields.io/badge/Claim%20DotQuit%20Pro-Code%20PRODUCTHUNT-FF6154?style=for-the-badge&logo=producthunt&logoColor=white)](https://buy.polar.sh/polar_cl_tfdIyrLDQxAYfrf82gdBeNrCVPXjyA5CqFSO90Eitzf)
 
 </div>
 
@@ -52,6 +68,12 @@ Unsaved work still triggers the app's own **"Save changes?"** sheet. Cancel it a
 - **Safe by construction** — `terminate()` only, never a force-kill. Finder, Dock and loginwindow are permanently exempt, and `.accessory` menu bar items are never even observed.
 - **Native settings** — a real System Settings-style window with behavior, whitelist, license, shortcuts, appearance and general panes.
 - **Privacy-friendly telemetry** — anonymous counters via [TelemetryDeck](https://telemetrydeck.com), one toggle to switch off entirely.
+
+<p align="center">
+  <img src="assets/screenshot.png" alt="DotQuit settings window — Behavior pane" width="750">
+</p>
+
+<p align="center"><sub>The native settings window — behavior, whitelist, license, shortcuts, appearance and general panes.</sub></p>
 
 ### Key specs
 
@@ -121,6 +143,8 @@ DotQuit cannot see window events without it. The Shortcuts & Permissions pane sh
 [![Buy License on Polar](https://img.shields.io/badge/License-Buy%20on%20Polar-blue?style=for-the-badge&logo=polar)](https://buy.polar.sh/polar_cl_tfdIyrLDQxAYfrf82gdBeNrCVPXjyA5CqFSO90Eitzf)
 
 **$2.99 once. Two Macs. Every future update.** There's a 7-day trial, and activation lives under **Settings → License**.
+
+> **🚀 Product Hunt launch special** — enter code **`PRODUCTHUNT`** at [checkout](https://buy.polar.sh/polar_cl_tfdIyrLDQxAYfrf82gdBeNrCVPXjyA5CqFSO90Eitzf) for **100% off DotQuit Pro**. Free for the first 100 people.
 
 The source is GPLv3 and you can always build it yourself for free. A license funds the signed, notarized builds, support, and continued development — it isn't a key that unlocks the code. Activation is bound to the machine's hardware UUID, so reinstalling never burns a seat, and deactivating releases it.
 
