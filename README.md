@@ -1,36 +1,30 @@
 <div align="center">
 
+<img src="Design/AppIcon-Preview.png" width="128" height="128" alt="DotQuit app icon">
+
 # DotQuit
 
-**Close the window. Quit the app.**
+**Zero-bloat macOS menu bar utility that automatically quits apps when their last window is closed.**
 
-The zero-bloat menu bar companion that quits macOS apps when their last window closes — so your Dock stays clean and your RAM stays yours.
+<br>
 
 [![Download DMG](https://img.shields.io/badge/Download-DotQuit.dmg-30B14F?style=for-the-badge&logo=apple&logoColor=white)](https://github.com/mehmettalhairmak/dotquit/releases/latest/download/DotQuit.dmg)
 [![Buy License on Polar](https://img.shields.io/badge/License-Buy%20on%20Polar-blue?style=for-the-badge&logo=polar)](https://buy.polar.sh/polar_cl_tfdIyrLDQxAYfrf82gdBeNrCVPXjyA5CqFSO90Eitzf)
 
-[![Platform](https://img.shields.io/badge/platform-macOS%2014.0%2B-000000?logo=apple&logoColor=white)](https://www.apple.com/macos/)
-[![Swift](https://img.shields.io/badge/Swift-5.10%2B-F05138?logo=swift&logoColor=white)](https://swift.org)
+[![Platform](https://img.shields.io/badge/macOS-14.0%2B-000000?logo=apple&logoColor=white)](https://www.apple.com/macos/)
+[![Universal](https://img.shields.io/badge/binary-Universal%20%28arm64%20%2B%20x86__64%29-8A63D2)](#features)
+[![Notarized](https://img.shields.io/badge/Apple-Notarized-30B14F?logo=apple&logoColor=white)](#1-direct-download-dmg--recommended)
 [![License](https://img.shields.io/badge/license-GPLv3-0A84FF)](LICENSE)
-[![Release](https://img.shields.io/badge/release-v1.0.0-6E56CF)](https://github.com/mehmettalhairmak/dotquit/releases/latest)
 
 </div>
 
 ---
 
-## The problem
+## Why DotQuit?
 
-On macOS, the red **✕** button doesn't quit anything. It closes a window.
+On macOS the red **✕** doesn't quit anything — it closes a window. The app stays resident, holding its memory and keeping its Dock indicator lit, waiting for a `⌘Q` that never comes. Open Preview for one PDF, close it, and it's still there an hour later.
 
-The app stays resident — holding its memory, keeping its Dock indicator lit, and quietly waiting for a `⌘Q` that never comes. Open Preview to read one PDF, close it, and it's still there an hour later. Multiply that by a day's work and you have a Dock full of ghosts and a few gigabytes of nothing.
-
-The usual answers are all bad: remember to press `⌘Q` every time, hunt through the Dock periodically, or reach for Activity Monitor.
-
-## The solution
-
-DotQuit watches for the one event that actually matters — a window being destroyed — and asks: *does this app have anything left on screen?*
-
-If the answer is no, it sends the app a normal quit request. Same thing `⌘Q` does. Nothing more violent than that.
+DotQuit watches for the one event that matters — a window being destroyed — and asks whether the app has anything left on screen. If not, it sends a normal quit request. Exactly what `⌘Q` does, nothing more violent.
 
 ```
 window destroyed
@@ -41,89 +35,73 @@ is it a regular GUI app?  ← menu bar items and daemons are never touched
       ↓
 is it whitelisted?        ← hold ⌥ to invert this for one close
       ↓
-any windows left?         ← on-screen (CoreGraphics) + minimized/hidden (Accessibility)
+any windows left?         ← on-screen (CoreGraphics) + minimized (Accessibility)
       ↓
   app.terminate()         ← never kill(9), never force
 ```
 
-If the app has unsaved work it shows its own **"Save changes?"** sheet. Cancel it and the app stays open — DotQuit respects that and moves on.
+Unsaved work still triggers the app's own **"Save changes?"** sheet. Cancel it and the app stays open.
 
 ---
 
 ## Features
 
-**Zero-idle architecture**
-No polling loops, no timers, no background scans. DotQuit is driven entirely by `AXObserver` window notifications and `NSWorkspace` lifecycle events. When nothing is happening, nothing runs.
+- **Zero-idle architecture** — no polling, no timers. Driven entirely by `AXObserver` window notifications and `NSWorkspace` lifecycle events.
+- **Smart Whitelist flyout** — hover the whitelist row and a panel slides out to the left: running apps on top, protected apps below, one click to move between them.
+- **Option (⌥) to invert** — hold Option while closing to flip the decision for that one window.
+- **Safe by construction** — `terminate()` only, never a force-kill. Finder, Dock and loginwindow are permanently exempt, and `.accessory` menu bar items are never even observed.
+- **Native settings** — a real System Settings-style window with behavior, whitelist, license, shortcuts, appearance and general panes.
+- **Privacy-friendly telemetry** — anonymous counters via [TelemetryDeck](https://telemetrydeck.com), one toggle to switch off entirely.
 
-| | Measured |
+### Key specs
+
+| | |
 |---|---|
-| Idle CPU | **0.00 s** over 45 s |
-| Memory footprint | **~19 MB** (18 MB with telemetry off) |
-| Timers while idle | **none** |
-
-**Smart Whitelist flyout**
-Hover the whitelist row in the menu bar popover and a panel slides out to the left. Two tiers: everything currently running on top (with the app you were just in pinned first), protected apps below. One click moves an app between them — no window switching, no Settings trip.
-
-Spotify, Slack, WhatsApp, Mail and Telegram are whitelisted out of the box.
-
-**Option (⌥) to invert**
-Hold Option while closing a window to flip the decision for that one close: a whitelisted app quits, anything else is spared. Useful for the exception that doesn't deserve a permanent rule.
-
-**Two quitting modes**
-- *Last window* (default) — quits only when no windows remain at all, including minimized and hidden ones.
-- *Immediate* — quits as soon as nothing is on screen, even with windows parked in the Dock.
-
-Either way, the on-screen window count must be zero. That check is not optional.
-
-**Safety by construction**
-- `terminate()` only. No force-kill API is called anywhere in the codebase.
-- Only `.regular` desktop apps are considered — `.accessory` menu bar items and `.prohibited` daemons are never observed, let alone quit.
-- Finder, Dock, loginwindow and SystemUIServer are permanently exempt.
-- Statistics only count an app once it has actually exited, so a cancelled save sheet never inflates the numbers.
-
-**Native settings**
-A real System Settings-style window: sidebar with search, behavior, whitelist, license, shortcuts and permissions, appearance, and general. Light and dark both supported. Global toggle shortcut defaults to `⌥⇧Q`.
-
-**Pro licensing**
-A 7-day trial, then a one-time **$2.99** lifetime license covering **2 Macs**. Activation runs through [Polar.sh](https://polar.sh) and is bound to the machine's hardware UUID, so reinstalling doesn't burn a seat. Deactivating releases the seat back. Keys live in the macOS Keychain, and DotQuit keeps working offline once activated.
+| Language | Native Swift + SwiftUI, no Electron, no helpers |
+| Memory | **~19 MB** resident |
+| Idle CPU | **0.00 s** measured over 45 s |
+| Binary | Universal — Apple Silicon `arm64` + Intel `x86_64` |
+| Signing | Developer ID, hardened runtime, **Apple notarized** |
+| Requires | macOS 14.0 Sonoma or later |
 
 ---
 
 ## Installation
 
-There are three ways to get DotQuit. They are independent — pick whichever suits you.
+### 1. Direct Download (DMG) — recommended
 
-### 1. Download the notarized DMG — the easy path
-
-[**⬇ Download DotQuit.dmg**](https://github.com/mehmettalhairmak/dotquit/releases/latest/download/DotQuit.dmg)
+[![Download DMG](https://img.shields.io/badge/Download-DotQuit.dmg-30B14F?style=for-the-badge&logo=apple&logoColor=white)](https://github.com/mehmettalhairmak/dotquit/releases/latest/download/DotQuit.dmg)
 
 1. Open the DMG and drag **DotQuit.app** into **Applications**.
-2. Launch it. DotQuit lives in the menu bar — there's no Dock icon by default.
-3. Grant Accessibility access (see below).
+2. Launch it — DotQuit lives in the menu bar, with no Dock icon by default.
+3. Grant Accessibility access when prompted.
 
-The build is signed with a Developer ID and notarized by Apple, so it opens without Gatekeeper warnings — no right-click-Open dance, no `xattr` incantations.
+The build is **code-signed with an Apple Developer ID, notarized by Apple, and stapled**. It opens on first launch like any other app — no right-click → Open, no `xattr -d`, no Privacy & Security override. Gatekeeper reports it as `source=Notarized Developer ID`.
 
-### 2. Buy a license — support the project
+### 2. Homebrew
 
-[**Get a lifetime license on Polar — $2.99**](https://buy.polar.sh/polar_cl_tfdIyrLDQxAYfrf82gdBeNrCVPXjyA5CqFSO90Eitzf)
+Homebrew support is coming soon (pending official homebrew-cask submission).
 
-One payment, two Macs, every future update. Activate under **Settings → License**, or paste the key from your Polar receipt.
+### 3. Build from Source
 
-The source is GPLv3 and the app runs without a license during the 7-day trial — buying one funds the notarized builds and continued development rather than unlocking the code. See [License](#license).
+For developers, and always free:
 
-### 3. Build from source — free, always
+```bash
+git clone https://github.com/mehmettalhairmak/dotquit.git
+cd dotquit
+open DotQuit.xcodeproj          # build and run, or:
+./Scripts/build-release.sh      # universal build -> ./dist
+```
 
-Everything you need is in this repository. Jump to [Building from source](#building-from-source).
+Requires macOS 14.0+ and Xcode 16 or newer. Dependencies resolve through SwiftPM ([TelemetryDeck](https://github.com/TelemetryDeck/SwiftClient), pinned in `Package.resolved`).
+
+> DotQuit cannot be sandboxed — cross-process `AXObserver`, `AXUIElementCopyAttributeValue` and `NSRunningApplication.terminate()` are all blocked inside a sandbox container. It ships as a hardened-runtime Developer ID app with a deliberately minimal entitlements file.
 
 ### Granting Accessibility access
 
-DotQuit cannot see window events without it. On first launch macOS will prompt; if you miss it:
-
 **System Settings → Privacy & Security → Accessibility → enable DotQuit**
 
-The Shortcuts & Permissions pane shows live status and has a button that takes you straight there. Until access is granted, the menu bar icon stays dimmed and DotQuit does nothing.
-
-> Accessibility is a TCC permission, not an entitlement. DotQuit uses it to observe *when* windows open and close — never what is inside them.
+DotQuit cannot see window events without it. The Shortcuts & Permissions pane shows live status with a button that takes you straight there; until access is granted the menu bar icon stays dimmed and DotQuit does nothing.
 
 ### Using it
 
@@ -138,79 +116,29 @@ The Shortcuts & Permissions pane shows live status and has a button that takes y
 
 ---
 
-## Building from source
+## Support & Commercial Licensing
 
-**Prerequisites** — macOS 14.0 or newer, Xcode 16 or newer (built and tested on Xcode 27). Swift 5 language mode; no extra tooling required.
+[![Buy License on Polar](https://img.shields.io/badge/License-Buy%20on%20Polar-blue?style=for-the-badge&logo=polar)](https://buy.polar.sh/polar_cl_tfdIyrLDQxAYfrf82gdBeNrCVPXjyA5CqFSO90Eitzf)
 
-```bash
-git clone https://github.com/mehmettalhairmak/DotQuit.git
-cd DotQuit
-open DotQuit.xcodeproj
-```
+**$2.99 once. Two Macs. Every future update.** There's a 7-day trial, and activation lives under **Settings → License**.
 
-Dependencies resolve automatically through Swift Package Manager — [TelemetryDeck](https://github.com/TelemetryDeck/SwiftClient), pinned in `Package.resolved`. Then just build and run.
-
-### Packaging a release
-
-```bash
-./Scripts/build-release.sh                  # universal build -> ./dist
-./Scripts/build-release.sh --sign           # + Developer ID signing
-./Scripts/build-release.sh --notarize       # + notarization and stapling
-```
-
-The script builds a universal `arm64 + x86_64` binary, stages it in `./dist`, and zips it. Without `--sign` it prints the exact signing and notarization commands it would run, so the pipeline can be reviewed before any credentials exist. Set `DEVELOPER_ID_APP` and `NOTARY_PROFILE` first.
-
-> **DotQuit must not be sandboxed.** The accessibility APIs it depends on — cross-process `AXObserver`, `AXUIElementCopyAttributeValue`, and `NSRunningApplication.terminate()` — are all blocked inside a sandbox container. It ships as a hardened-runtime, Developer ID app with a deliberately minimal entitlements file.
-
-### Project layout
-
-```
-DotQuit/
-├── Core/
-│   ├── WindowWatcher.swift      # AXObserver, decision tree, termination
-│   ├── WhitelistManager.swift   # exemptions, persisted to UserDefaults
-│   ├── PermissionsManager.swift # Accessibility trust
-│   ├── LicenseManager.swift     # Polar.sh activation + Keychain
-│   ├── AnalyticsManager.swift   # the only file that imports TelemetryDeck
-│   └── …
-├── Views/
-│   ├── MenuBarPopoverView.swift        # the menu bar popover
-│   ├── WhitelistFlyoutController.swift # left-anchored NSPanel
-│   ├── SettingsView.swift              # System Settings-style window
-│   └── …
-└── Scripts/build-release.sh
-```
+The source is GPLv3 and you can always build it yourself for free. A license funds the signed, notarized builds, support, and continued development — it isn't a key that unlocks the code. Activation is bound to the machine's hardware UUID, so reinstalling never burns a seat, and deactivating releases it.
 
 ---
 
-## Privacy & security
+## Privacy
 
-DotQuit observes window *lifecycle events*. It does not and cannot read window contents, text, keystrokes, clipboard, or any app's private data. There is no accessibility tree traversal beyond counting windows and reading their subrole.
+DotQuit observes window *lifecycle events*. It cannot read window contents, text, keystrokes, clipboard or any app's private data.
 
-**Telemetry** is anonymous, powered by [TelemetryDeck](https://telemetrydeck.com), and can be switched off in **Settings → General → Share anonymous usage diagnostics**. Turning it off doesn't merely mute the SDK — it is never initialized, and nothing is transmitted.
-
-What is sent: five counters (launch, app quit, whitelist add, license activated, Option-invert used) plus the device metadata TelemetryDeck attaches by default. Bundle identifiers of well-known public apps are sent in the clear so the counts are meaningful; **anything else is reduced to a salted SHA-256 digest**, so a private or enterprise app never appears by name.
-
-What is never sent: window titles, file paths, keystrokes, your license key, or any identifier that points back to you. The user identifier is a salted hash computed on-device.
+Telemetry is anonymous, powered by TelemetryDeck, and switched off under **Settings → General → Share anonymous usage diagnostics** — off means the SDK is never initialized, not merely muted. Five counters are sent; well-known public bundle identifiers go in the clear so the numbers mean something, and **everything else becomes a salted SHA-256 digest**, so a private or enterprise app never appears by name. Window titles, file paths, keystrokes and your license key are never transmitted.
 
 ---
 
 ## License
 
-DotQuit's source code is free software under the **GNU General Public License v3.0**. The full text is in [`LICENSE`](LICENSE).
+DotQuit is free software under the **GNU General Public License v3.0** — full text in [`LICENSE`](LICENSE). You may use, study, modify and redistribute the source, and distribute builds you make from it, provided derivative works stay under GPLv3 and ship their corresponding source.
 
-That means you may use, study, modify and redistribute the source, and distribute builds you make from it — provided derivative works stay under GPLv3 and ship their corresponding source.
-
-**What the paid license buys.** The code is free; the convenience isn't. A [Polar.sh](https://polar.sh) purchase gets you:
-
-- a **pre-built, Developer ID-signed and notarized** binary that launches without Gatekeeper warnings
-- **packaged releases** with release notes, so you don't have to rebuild to stay current
-- **support**, and a direct say in what gets built next
-- the project's continued development
-
-It is a voluntary exchange, not a restriction. Nothing in the paid license overrides the GPL: if you'd rather clone the repo and build DotQuit yourself, that is explicitly allowed and always will be.
-
-**Third-party code.** [TelemetryDeck SwiftClient](https://github.com/TelemetryDeck/SwiftClient) is MIT-licensed, which is compatible with GPLv3.
+[TelemetryDeck SwiftClient](https://github.com/TelemetryDeck/SwiftClient) is MIT-licensed, which is GPLv3-compatible.
 
 ## Author
 
